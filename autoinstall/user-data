@@ -1,0 +1,162 @@
+#cloud-config
+# See the autoinstall documentation at:
+# https://canonical-subiquity.readthedocs-hosted.com/en/latest/reference/autoinstall-reference.html
+autoinstall:
+  apt:
+    disable_components: []
+    fallback: offline-install
+    geoip: true
+    mirror-selection:
+      primary:
+      - uri: http://gb.archive.ubuntu.com/ubuntu/
+      - country-mirror
+      - arches: &id001
+        - amd64
+        - i386
+        uri: http://archive.ubuntu.com/ubuntu/
+      - arches: &id002
+        - s390x
+        - arm64
+        - armhf
+        - powerpc
+        - ppc64el
+        - riscv64
+        uri: http://ports.ubuntu.com/ubuntu-ports
+    preserve_sources_list: false
+    security:
+    - arches: *id001
+      uri: http://security.ubuntu.com/ubuntu/
+    - arches: *id002
+      uri: http://ports.ubuntu.com/ubuntu-ports
+  codecs:
+    install: false
+  drivers:
+    install: false
+  identity:
+    hostname: trinity
+    # Password (for dev): password
+    password: $y$j9T$TgjYfmI0/7AP1LNKp7nQB1$CY7DV7vSOCl1k4xJ4H9DKjxLIjRhzP4aunjowBJJi8C
+    realname: localadmin
+    username: localadmin
+  kernel:
+    package: linux-generic
+  keyboard:
+    layout: gb
+    toggle: null
+    variant: ''
+  locale: en_GB.UTF-8
+  network:
+    ethernets:
+      enp1s0:
+        addresses:
+        - 192.168.122.2/24
+        nameservers:
+          addresses:
+          - 192.168.122.2
+          - 8.8.8.8
+          search:
+          - nbishop.uk
+        routes:
+        - to: default
+          via: 192.168.122.1
+    version: 2
+  oem:
+    install: auto
+  packages:
+    - git
+    
+  snaps:
+    - name: nextcloud
+  source:
+    id: ubuntu-server
+    search_drivers: false
+  ssh:
+    allow-pw: false
+    authorized-keys:
+    - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCoQUHWXQA85/hqvPNMC5BTau6wCsTu7xb4a6Rx0nNU/v4Jha4vAU/XgcfQ009W2YDjI8QBFtfDvDV0IK6SwUGQMFELG36tdl9heD2n0uhDrbXQlzD58R6NW3DryLvnVZQtT3qkVRaVKxhVJesl44AnY5dOWO4r6LYNQxJg9x2WCLEMJL3BGFyHFt0L1vSHFqo2EgvBP2MrIoROFZlDcBmYf+ffPsF9THdgYpUdpVfDu0RVe1Bn0Hw29SnM5OsKfgYlS7++V3YcQtbUrOdyJHlfuzax4EZ4NWNNOMdWm5/qxitIEQke5pho+ijRjx4NKd7qnUXMjWGkNNjxS2S5BF+OS4/Bl+TaKGDxvQlXSmZiTJNWet1lviFPygWtwNT796l9nOwWn8BFKwsfpMCboWFwTsSaZTIXF/rJSIWPlHHc8Pzj4Ly6dVQUtngArcSS3cV3uAv8L00qavOL3d2aSgiVIs6ON+uKeoO2XClOx2eVVUdZ6m5P13PauyPPdXtbjsEHcxa9sf0wLzRP8Sq1NApbyp+BZ2kan1CaiGs7QJCK19Xt/jXtNRJw5JUAAZrbu/hh3tYWHjm58sfG8oVJiMSz9aO4d/8lci9fqAgr80j9pXysAecRQVxnOCJRyeOoxyNVqCx7VsqQqLHQT7IdSU4dbz0NsVImXnQofoxT7vX8Rw==
+      danbishop@github/43457202 # ssh-import-id gh:danbishop'
+    install-server: true
+  storage:
+    config:
+    - ptable: gpt
+      path: /dev/vda
+      wipe: superblock-recursive
+      preserve: false
+      name: ''
+      grub_device: false
+      id: disk-vda
+      type: disk
+    - device: disk-vda
+      size: 1127219200
+      wipe: superblock
+      flag: boot
+      number: 1
+      preserve: false
+      grub_device: true
+      offset: 1048576
+      path: /dev/vda1
+      id: partition-0
+      type: partition
+    - fstype: fat32
+      volume: partition-0
+      preserve: false
+      id: format-0
+      type: format
+    - device: disk-vda
+      size: 2147483648
+      wipe: superblock
+      number: 2
+      preserve: false
+      grub_device: false
+      offset: 1128267776
+      path: /dev/vda2
+      id: partition-1
+      type: partition
+    - fstype: ext4
+      volume: partition-1
+      preserve: false
+      id: format-1
+      type: format
+    - device: disk-vda
+      size: 23566745600
+      wipe: superblock
+      number: 3
+      preserve: false
+      grub_device: false
+      offset: 3275751424
+      path: /dev/vda3
+      id: partition-2
+      type: partition
+    - name: ubuntu-vg
+      devices:
+      - partition-2
+      preserve: false
+      id: lvm_volgroup-0
+      type: lvm_volgroup
+    - name: ubuntu-lv
+      volgroup: lvm_volgroup-0
+      size: 11781799936B
+      wipe: superblock
+      preserve: false
+      path: /dev/ubuntu-vg/ubuntu-lv
+      id: lvm_partition-0
+      type: lvm_partition
+    - fstype: ext4
+      volume: lvm_partition-0
+      preserve: false
+      id: format-2
+      type: format
+    - path: /
+      device: format-2
+      id: mount-2
+      type: mount
+    - path: /boot
+      device: format-1
+      id: mount-1
+      type: mount
+    - path: /boot/efi
+      device: format-0
+      id: mount-0
+      type: mount
+  updates: security
+  version: 1

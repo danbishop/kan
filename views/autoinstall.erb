@@ -1,0 +1,92 @@
+#cloud-config
+autoinstall:
+  # version is an Autoinstall required field.
+  version: 1
+
+  # This adds the default ubuntu-desktop packages to the system.
+  # Any desired additional packages may also be listed here.
+  packages:
+    - ruby
+    - ruby-dev
+    - git
+    - curl
+    - build-essential
+    - ssh
+    - deja-dup
+    - sssd
+
+  # Any desired additional snaps may also be listed here.
+  snaps:
+    - name: warzone2100
+    - name: spotify
+    - name: kita
+    - name: slack
+    - name: openttd
+    - name: bitwarden
+    - name: bw
+    - name: code
+      classic: true
+
+  # Subiquity will, by default, configure a partition layout using LVM.
+  # The 'direct' layout method shown here will produce a non-LVM result.
+  storage:
+    layout:
+      name: lvm
+  apt:
+    disable_components: []
+    fallback: offline-install
+    geoip: false
+    mirror-selection:
+      primary:
+      - arches: &id001
+        - amd64
+        - i386
+        uri: http://gb.archive.ubuntu.com/ubuntu/
+      - arches: &id002
+        - s390x
+        - arm64
+        - armhf
+        - powerpc
+        - ppc64el
+        - riscv64
+        uri: http://ports.ubuntu.com/ubuntu-ports
+    preserve_sources_list: false
+    security:
+    - arches: *id001
+      uri: http://security.ubuntu.com/ubuntu/
+    - arches: *id002
+      uri: http://ports.ubuntu.com/ubuntu-ports
+  codecs:
+    install: true
+  drivers:
+    install: false
+  identity:
+    hostname: <%= @test %>.danbishop.uk
+    username: localadmin
+    # Password (for dev): password
+    password: $y$j9T$TgjYfmI0/7AP1LNKp7nQB1$CY7DV7vSOCl1k4xJ4H9DKjxLIjRhzP4aunjowBJJi8C
+    realname: 'Local Admin'
+  kernel:
+    package: linux-generic-hwe-24.04
+  keyboard:
+    layout: gb
+    toggle: null
+    variant: ''
+  locale: en_GB.UTF-8
+  oem:
+    install: auto
+  source:
+    id: ubuntu-desktop-minimal
+    search_drivers: false
+  ssh:
+    allow-pw: false
+    authorized-keys: []
+    install-server: true
+  timezone: Europe/London
+  updates: security
+
+  late-commands:
+    - wget http://neo.danbishop.uk/sssd.conf -O /target/etc/sssd/sssd.conf
+    - chown root:root /target/etc/sssd/sssd.conf
+    - chmod 600 /target/etc/sssd/sssd.conf
+    - curtin in-target -- pam-auth-update --enable mkhomedir
